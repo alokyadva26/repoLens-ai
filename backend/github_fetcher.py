@@ -13,7 +13,11 @@ Responsible for:
 import base64
 import re
 import requests
+import urllib3
 from typing import Optional
+
+# Disable insecure request warnings for the SSL EOF workaround
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Base URL for the GitHub REST API
 GITHUB_API_BASE = "https://api.github.com"
@@ -77,7 +81,7 @@ def fetch_repo_metadata(
     url = f"{GITHUB_API_BASE}/repos/{owner}/{repo}"
     headers = _build_headers(token)
 
-    response = requests.get(url, headers=headers, timeout=10)
+    response = requests.get(url, headers=headers, timeout=10, verify=False)
     response.raise_for_status()
 
     raw = response.json()
@@ -133,7 +137,7 @@ def fetch_repo_languages(
     url = f"{GITHUB_API_BASE}/repos/{owner}/{repo}/languages"
     headers = _build_headers(token)
 
-    response = requests.get(url, headers=headers, timeout=10)
+    response = requests.get(url, headers=headers, timeout=10, verify=False)
     response.raise_for_status()
 
     return response.json()
@@ -169,7 +173,7 @@ def fetch_repo_readme(
     url = f"{GITHUB_API_BASE}/repos/{owner}/{repo}/readme"
     headers = _build_headers(token)
 
-    response = requests.get(url, headers=headers, timeout=10)
+    response = requests.get(url, headers=headers, timeout=10, verify=False)
 
     # A missing README is not an error — treat it as empty content.
     if response.status_code == 404:
@@ -218,7 +222,7 @@ def fetch_repo_structure(
     url = f"{GITHUB_API_BASE}/repos/{owner}/{repo}/contents"
     headers = _build_headers(token)
 
-    response = requests.get(url, headers=headers, timeout=10)
+    response = requests.get(url, headers=headers, timeout=10, verify=False)
 
     # 404 = repo not found or no default branch yet; 409 = empty repository.
     # Both are treated as "no structure available" rather than hard errors.
